@@ -4,22 +4,17 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include <game/game.h>
+
 
 typedef struct engine_t engine_t;
 struct engine_t {
-	char* window_name;
-	size_t viewport_width;
-	size_t viewport_height;
-
-	bool is_running;
-
-	unsigned int last_error;
+	bool was_initialized;
+	int exit_error;
+    game_t game;
 };
 
-bool engine_pre_init(engine_t* engine_state, int argc, const char** argv);
-bool engine_init(engine_t* engine_state);
-void engine_tick(engine_t* engine_state);
-void engine_shutdown(engine_t* engine_state);
+int engine_run(engine_t* engine_state, int argc, const char** argv);
 
 
 #endif

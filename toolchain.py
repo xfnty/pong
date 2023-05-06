@@ -85,12 +85,15 @@ def _run_command(
         title: str, 
         cmd: str, 
         cwd: str=Settings.PROJECT_DIR,
+        print_exit_code=False,
         verbose=False) -> bool:
     try:
         print(f'----- {title} -----')
         if verbose:
             print(f'> {cmd}')
-        sp.check_call(cmd, cwd=cwd, shell=True)
+        r = sp.check_call(cmd, cwd=cwd, shell=True)
+        if print_exit_code:
+            print(f'----- Exited with code {r} -----')
     except Exception as e:
         print(str(e))
         return False
@@ -128,7 +131,8 @@ def run(build_type, args=[]):
     return _run_command(
         'Running',
         f'{exe_path} ' + ' '.join(args),
-        cwd=exe_dir
+        cwd=exe_dir,
+        print_exit_code=True,
     )
 
 
@@ -152,7 +156,8 @@ def run_sandbox(args=[]):
     return _run_command(
         'Running sandbox',
         f'{exe_path} ' + ' '.join(args),
-        cwd=exe_dir
+        cwd=exe_dir,
+        print_exit_code=True,
     )
 
 
