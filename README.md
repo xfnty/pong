@@ -1,3 +1,9 @@
+<p float="left">
+
+[![Linux Build](https://github.com/ts-vadim/pong/actions/workflows/build-linux.yml/badge.svg)](https://github.com/ts-vadim/pong/actions/workflows/build-linux.yml)
+[![Windows Build](https://github.com/ts-vadim/pong/actions/workflows/build-windows.yml/badge.svg)](https://github.com/ts-vadim/pong/actions/workflows/build-windows.yml)
+
+</p>
 
 ## Developing
 
