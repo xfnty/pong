@@ -8,12 +8,15 @@
 
 #include <engine/update_context.h>
 
+#include <game/screen_stack.h>
+
 
 typedef struct game_s {
     bool was_initialized;
     bool is_running;
 
     RenderTexture2D canvas;
+    screen_stack_t screen_stack;
 } game_t;
 
 
