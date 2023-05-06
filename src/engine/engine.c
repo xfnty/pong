@@ -125,8 +125,16 @@ void _engine_shutdown(engine_t* engine) {
 
 
 void _raylib_log_callback(int logLevel, const char *text, va_list args) {
-	if (logLevel > LOG_WARNING)
-		vprintf(text, args);
+	if (logLevel < LOG_WARNING)
+        return;
+
+    log_msg_t msg = (log_msg_t){
+        "raylib", malloc(256)
+    };
+
+    assert(vsprintf(msg.buffer, text, args) > 0);
+
+    _logging_push_entry((log_entry_t) {.msg = msg});
 }
 
 bool _parse_args(engine_t* engine, int argc, const char** argv) {
