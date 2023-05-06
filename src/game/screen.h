@@ -3,6 +3,8 @@
 
 #include <kvec.h>
 
+#include <engine/update_context.h>
+
 
 typedef struct game_s game_t;
 typedef struct screen_s screen_t;
@@ -13,15 +15,14 @@ typedef enum {
     SCREEN_TYPE_POPUP,   // Just dims the underlying screen
 } screen_type_t;
 
-typedef void (*screen_callback_f)(screen_t*, game_t*);
-
 typedef struct screen_s {
+    const char* name;
     screen_type_t type;
     void* data;
 
-    screen_callback_f on_enter;
-    screen_callback_f on_update;
-    screen_callback_f on_exit;
+    void (*on_enter)(screen_t*);
+    void (*on_update)(screen_t*, update_context_t);
+    void (*on_exit)(screen_t*);
 } screen_t;
 
 

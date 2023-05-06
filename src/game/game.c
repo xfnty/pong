@@ -15,12 +15,14 @@ bool game_init(game_t* game) {
     while (!IsTextureReady(game->canvas.texture));
 
     screen_stack_init(&game->screen_stack);
-    screen_stack_push(&game->screen_stack, gameplay_screen_create());
 
     game->was_initialized = true;
     game->is_running = true;
 
-    LOG("Initialized");
+    LOG("initialized");
+
+    screen_stack_push(&game->screen_stack, gameplay_screen_create());
+    screen_stack_push(&game->screen_stack, gameplay_screen_create());
 
     return true;
 }
@@ -30,13 +32,16 @@ void game_tick(game_t* game, update_context_t ctx) {
 
     ClearBackground(BLUE);
     screen_stack_update(&game->screen_stack, ctx);
-    DrawPixelV(ctx.mouse, RED);
+
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+        screen_stack_push(&game->screen_stack, gameplay_screen_create());
+    else if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
+        screen_stack_pop(&game->screen_stack);
 
     game->is_running = !WindowShouldClose();
 }
 
 void game_debug_draw(game_t* game, update_context_t ctx) {
-    DrawText(TextFormat("%.1f %.1f", ctx.mouse.x, ctx.mouse.y), 2, 2, 8, YELLOW);
 }
 
 void game_shutdown(game_t* game) {
@@ -46,5 +51,5 @@ void game_shutdown(game_t* game) {
     UnloadRenderTexture(game->canvas);
     game->was_initialized = false;
 
-    LOG("Shutdown");
+    LOG("shutdown");
 }
