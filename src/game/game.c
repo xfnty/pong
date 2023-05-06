@@ -9,7 +9,7 @@
 bool game_init(game_t* game) {
     assert(game->was_initialized != true);
 
-    game->canvas = LoadRenderTexture(858, 525);
+    game->canvas = LoadRenderTexture(80, 50);
     while (!IsTextureReady(game->canvas.texture));
 
     game->was_initialized = true;
@@ -22,10 +22,15 @@ bool game_init(game_t* game) {
 
 void game_tick(game_t* game, update_context_t ctx) {
     assert(game->was_initialized);
-    
+
     ClearBackground(BLUE);
+    DrawPixelV(ctx.mouse, RED);
 
     game->is_running = !WindowShouldClose();
+}
+
+void game_debug_draw(game_t* game, update_context_t ctx) {
+    DrawText(TextFormat("%.1f %.1f", ctx.mouse.x, ctx.mouse.y), 2, 2, 8, YELLOW);
 }
 
 void game_shutdown(game_t* game) {

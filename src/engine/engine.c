@@ -74,8 +74,8 @@ bool _engine_tick(engine_t* engine) {
     float scale = fmin(screen_size.x / viewport_size.x, screen_size.y / viewport_size.y);
 
     Vector2 virtualMouse = { 0 };
-    virtualMouse.x = (GetMouseX() - (screen_size.x - (viewport_size.x * scale)) / 2) / scale;
-    virtualMouse.y = (GetMouseY() - (screen_size.y - (viewport_size.y * scale)) / 2) / scale;
+    virtualMouse.x = (GetMouseX() - (screen_size.x - (viewport_size.x * scale)) / 2) / scale - 0.5;
+    virtualMouse.y = (GetMouseY() - (screen_size.y - (viewport_size.y * scale)) / 2) / scale - 0.5;
     virtualMouse = Vector2Clamp(virtualMouse, (Vector2){ 0, 0 }, viewport_size);
 
     Rectangle sourceRec = { 0.0f, 0.0f, viewport_size.x, -viewport_size.y };
@@ -104,6 +104,7 @@ bool _engine_tick(engine_t* engine) {
             0.0f,
             WHITE
         );
+        game_debug_draw(&engine->game, ctx);
     EndDrawing();
 
 	return engine->game.is_running;

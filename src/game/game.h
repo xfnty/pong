@@ -21,5 +21,7 @@ bool game_init(game_t* game);
 void game_tick(game_t* game, update_context_t ctx);
 void game_shutdown(game_t* game);
 
+void game_debug_draw(game_t* game, update_context_t ctx);
+
 
 #endif
