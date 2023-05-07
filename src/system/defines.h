@@ -14,10 +14,6 @@
 
 #define STACKARRAY_SIZE(array) (sizeof(array)/sizeof((array)[0]))
 
-#ifndef SCOPE_NAME
-#define SCOPE_NAME NULL
-#endif
-
 #define ID_INVALID (~(id_t)0)
 
 

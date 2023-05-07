@@ -75,6 +75,18 @@ void screen_stack_update(screen_stack_t* stack, update_context_t ctx) {
     }
 }
 
+void screen_stack_make_current(screen_stack_t* stack, strid_t name) {
+    int i;
+    for (i = 0; i < kv_size(*stack); i++) {
+        if (kv_A(*stack, i).name == name)
+            break;
+    }
+
+    for (int j = kv_size(*stack) - 1; j > i ; j--) {
+        screen_stack_pop(stack);
+    }
+}
+
 screen_t* screen_stack_top(screen_stack_t* stack) {
     assert(stack != NULL);
     return (kv_size(*stack) > 0) ? &(kv_A(*stack, kv_size(*stack) - 1)) : NULL;

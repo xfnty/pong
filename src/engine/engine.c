@@ -15,8 +15,6 @@
 #include <system/defines.h>
 #include <system/logging.h>
 
-#include <engine/update_context.h>
-
 
 static void _raylib_log_callback(int logLevel, const char *text, va_list args);
 
@@ -87,7 +85,8 @@ bool _engine_tick(engine_t* engine) {
     };
 
     update_context_t ctx = (update_context_t) {
-        .mouse = virtualMouse
+        .mouse = virtualMouse,
+        .game = &engine->game
     };
 
     BeginTextureMode(engine->game.canvas);

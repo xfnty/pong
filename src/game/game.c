@@ -4,6 +4,7 @@
 
 #define SCOPE_NAME "game"
 #include <system/logging.h>
+#include <system/strid.h>
 
 #include <game/screens/gameplay.h>
 
@@ -22,7 +23,6 @@ bool game_init(game_t* game) {
     LOG("initialized");
 
     screen_stack_push(&game->screen_stack, gameplay_screen_create());
-    screen_stack_push(&game->screen_stack, gameplay_screen_create());
 
     return true;
 }
@@ -32,11 +32,6 @@ void game_tick(game_t* game, update_context_t ctx) {
 
     ClearBackground(BLUE);
     screen_stack_update(&game->screen_stack, ctx);
-
-    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
-        screen_stack_push(&game->screen_stack, gameplay_screen_create());
-    else if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
-        screen_stack_pop(&game->screen_stack);
 
     game->is_running = !WindowShouldClose();
 }

@@ -6,8 +6,6 @@
 
 #include <raylib.h>
 
-#include <engine/update_context.h>
-
 #include <game/screen_stack.h>
 
 
@@ -18,6 +16,11 @@ typedef struct game_s {
     RenderTexture2D canvas;
     screen_stack_t screen_stack;
 } game_t;
+
+typedef struct update_context_s {
+    game_t* game;
+    Vector2 mouse; // mouse position mapped to game's viewport
+} update_context_t;
 
 
 bool game_init(game_t* game);

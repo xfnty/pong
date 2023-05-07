@@ -3,11 +3,12 @@
 
 #include <kvec.h>
 
-#include <engine/update_context.h>
+#include <system/strid.h>
 
 
 typedef struct game_s game_t;
 typedef struct screen_s screen_t;
+typedef struct update_context_s update_context_t;
 
 typedef enum {
     SCREEN_TYPE_INVALID,
@@ -16,7 +17,7 @@ typedef enum {
 } screen_type_t;
 
 typedef struct screen_s {
-    const char* name;
+    strid_t name;
     screen_type_t type;
     void* data;
 

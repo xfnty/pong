@@ -9,6 +9,10 @@
 
 #include <system/defines.h>
 
+#ifndef SCOPE_NAME
+#define SCOPE_NAME NULL
+#endif
+
 
 typedef struct {
 	const char* func;
@@ -57,7 +61,7 @@ log_msg_t _logging_create_msg_f(const char* restrict scope, const char* restrict
 #define _LOGGING_TIME_CURRENT() ((log_time_t) { time(NULL), clock() })
 
 #define LOG(msg) _logging_push_entry(								\
-		(log_entry_t) {											\
+		(log_entry_t) {											    \
 			_logging_create_msg(SCOPE_NAME, msg),					\
 			_LOGGING_POS_HERE(),									\
 			_LOGGING_TIME_CURRENT(),								\
@@ -66,7 +70,7 @@ log_msg_t _logging_create_msg_f(const char* restrict scope, const char* restrict
 	)
 
 #define LOGF(msg, ...) _logging_push_entry(							\
-		(log_entry_t) {											\
+		(log_entry_t) {											    \
 			_logging_create_msg_f(SCOPE_NAME, msg, __VA_ARGS__),	\
 			_LOGGING_POS_HERE(),									\
 			_LOGGING_TIME_CURRENT(),								\
