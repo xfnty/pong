@@ -6,10 +6,10 @@
 #include <system/logging.h>
 #include <system/strid.h>
 
-#include <game/states/test.h>
+#include <game/states/intro.h>
 
 
-void _game_switch_state(game_t* game, game_state_t new_state);
+void game_switch_state(game_t* game, game_state_t new_state);
 
 bool game_init(game_t* game) {
     assert(game != NULL);
@@ -26,7 +26,7 @@ bool game_init(game_t* game) {
 
     LOG("initialized");
 
-    _game_switch_state(game, test_state_create());
+    game_switch_state(game, intro_state_create());
 
     return true;
 }
@@ -55,7 +55,7 @@ void game_shutdown(game_t* game) {
     LOG("shutdown");
 }
 
-void _game_switch_state(game_t* game, game_state_t new_state) {
+void game_switch_state(game_t* game, game_state_t new_state) {
     assert(game != NULL);
     assert(game->was_initialized);
 

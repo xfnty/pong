@@ -28,5 +28,7 @@ void game_shutdown(game_t* game);
 
 void game_debug_draw(game_t* game, update_context_t ctx);
 
+void game_switch_state(game_t* game, game_state_t new_state);
+
 
 #endif
