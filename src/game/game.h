@@ -6,16 +6,18 @@
 
 #include <raylib.h>
 
+#include <game/state.h>
+
 
 typedef struct game_s {
     bool was_initialized;
     bool is_running;
+    game_state_t state;
 
     RenderTexture2D canvas;
 } game_t;
 
 typedef struct update_context_s {
-    game_t* game;
     Vector2 mouse; // mouse position mapped to game's viewport
 } update_context_t;
 

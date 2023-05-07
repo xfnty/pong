@@ -13,6 +13,7 @@
 #include <system/debug.h>
 #include <system/memory.h>
 #include <system/defines.h>
+#define SCOPE_NAME "core"
 #include <system/logging.h>
 
 
@@ -85,8 +86,7 @@ bool _engine_tick(engine_t* engine) {
     };
 
     update_context_t ctx = (update_context_t) {
-        .mouse = virtualMouse,
-        .game = &engine->game
+        .mouse = virtualMouse
     };
 
     BeginTextureMode(engine->game.canvas);
