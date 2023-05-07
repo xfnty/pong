@@ -86,7 +86,6 @@ bool _engine_tick(engine_t* engine) {
 
     update_context_t ctx = (update_context_t) {
         .mouse = virtualMouse,
-        .keyboard = GetKeyboardState(),
         .game = &engine->game
     };
 
