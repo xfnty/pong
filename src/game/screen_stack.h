@@ -1,6 +1,8 @@
 #ifndef GAME_SCREEN_STACK_H
 #define GAME_SCREEN_STACK_H
 
+#include <stdbool.h>
+
 #include <kvec.h>
 
 #include <system/strid.h>
@@ -18,6 +20,7 @@ void screen_stack_clear(screen_stack_t* stack);
 void screen_stack_destroy(screen_stack_t* stack);
 
 screen_t* screen_stack_top(screen_stack_t* stack);
+bool screen_stack_is_on_top(screen_stack_t* stack, strid_t name);
 void screen_stack_make_current(screen_stack_t* stack, strid_t name);
 void screen_stack_update(screen_stack_t* stack, update_context_t ctx);
 

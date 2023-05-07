@@ -3593,6 +3593,22 @@ void OpenURL(const char *url)
 //----------------------------------------------------------------------------------
 // Module Functions Definition - Input (Keyboard, Mouse, Gamepad) Functions
 //----------------------------------------------------------------------------------
+// Get previous keyboard state
+char* GetPreviousKeyboardState() {
+    return CORE.Input.Keyboard.previousKeyState;
+}
+
+// Get keyboard state where none of the keys are pressed
+char* GetNullKeyboardState() {
+    static char null_kb_state[MAX_KEYBOARD_KEYS] = { 0 };
+    return null_kb_state;
+}
+
+// Get current keyboard state
+char* GetKeyboardState() {
+    return CORE.Input.Keyboard.currentKeyState;
+}
+
 // Check if a key has been pressed once
 bool IsKeyPressed(int key)
 {

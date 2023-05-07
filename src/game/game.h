@@ -20,6 +20,7 @@ typedef struct game_s {
 typedef struct update_context_s {
     game_t* game;
     Vector2 mouse; // mouse position mapped to game's viewport
+    char* keyboard; // changed by the screen_stack (empty when a screen is not on the top)
 } update_context_t;
 
 

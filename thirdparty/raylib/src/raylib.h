@@ -86,6 +86,8 @@
 #define RAYLIB_VERSION_PATCH 0
 #define RAYLIB_VERSION  "4.5"
 
+#define MAX_KEYBOARD_KEYS 512
+
 // Function specifiers in case library is build/used as a shared library (Windows)
 // NOTE: Microsoft specifiers to tell compiler that symbols are imported/exported from a .dll
 #if defined(_WIN32)
@@ -1099,6 +1101,9 @@ RLAPI unsigned char *DecodeDataBase64(const unsigned char *data, int *outputSize
 //------------------------------------------------------------------------------------
 
 // Input-related functions: keyboard
+RLAPI char* GetPreviousKeyboardState();                       // Get previous keyboard state
+RLAPI char* GetNullKeyboardState();                           // Get keyboard state where none of the keys are pressed
+RLAPI char* GetKeyboardState();                               // Get current keyboard state
 RLAPI bool IsKeyPressed(int key);                             // Check if a key has been pressed once
 RLAPI bool IsKeyDown(int key);                                // Check if a key is being pressed
 RLAPI bool IsKeyReleased(int key);                            // Check if a key has been released once

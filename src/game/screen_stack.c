@@ -2,6 +2,7 @@
 
 #include <assert.h>
 
+#include <raylib.h>
 #include <kvec.h>
 
 #include <system/logging.h>
@@ -70,12 +71,16 @@ void screen_stack_update(screen_stack_t* stack, update_context_t ctx) {
     // starting from lowest_screen_i.
     for (int i = lowest_screen_i; i < kv_size(*stack); i++) {
         screen_t* scr = &kv_A(*stack, i);
-        if (scr->on_update)
+        if (scr->on_update) {
+            ctx.keyboard = (i == kv_size(*stack) - 1) ? ctx.keyboard : GetNullKeyboardState();
             scr->on_update(scr, ctx);
+        }
     }
 }
 
 void screen_stack_make_current(screen_stack_t* stack, strid_t name) {
+    assert(stack != NULL);
+
     int i;
     for (i = 0; i < kv_size(*stack); i++) {
         if (kv_A(*stack, i).name == name)
@@ -85,6 +90,16 @@ void screen_stack_make_current(screen_stack_t* stack, strid_t name) {
     for (int j = kv_size(*stack) - 1; j > i ; j--) {
         screen_stack_pop(stack);
     }
+}
+
+bool screen_stack_is_on_top(screen_stack_t* stack, strid_t name) {
+    assert(stack != NULL);
+
+    screen_t* scr = screen_stack_top(stack);
+    if (scr == NULL)
+        return false;
+
+    return name == scr->name;
 }
 
 screen_t* screen_stack_top(screen_stack_t* stack) {
