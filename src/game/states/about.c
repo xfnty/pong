@@ -25,11 +25,10 @@ static void _about_state_update(game_state_t* state, game_t* game, update_contex
     DrawText("  W-S - left pad", 2, 30, 8, WHITE);
     DrawText("  UP-DOWN - right pad", 2, 40, 8, WHITE);
     DrawText("  ESC - return to main menu", 2, 50, 8, WHITE);
-    DrawText("  P - pause", 2, 60, 8, WHITE);
 
     DrawText("> return", 2, 80, 8, WHITE);
 
-    if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_ESCAPE)) {
+    if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_ESCAPE)) {
         game_switch_state(game, main_menu_state_create());
     }
 }

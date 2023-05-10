@@ -31,7 +31,7 @@ static void _intro_state_update(game_state_t* state, game_t* game, update_contex
     intro_state_t* intro = (intro_state_t*)state->data;
 
     float progress = (GetTime() - intro->start_time) / 1.5;
-    if (progress >= 1)
+    if (GetKeyPressed() != 0 || progress >= 1)
         game_switch_state(game, main_menu_state_create());
 
     int size = 40;

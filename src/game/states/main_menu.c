@@ -40,10 +40,10 @@ static void _main_menu_state_update(game_state_t* state, game_t* game, update_co
     DrawText((menu->selected_menu_item == 1) ? "> about" : " about", 2, 60, 8, WHITE);
     DrawText((menu->selected_menu_item == 2) ? "> exit" : " exit", 2, 70, 8, WHITE);
 
-    menu->selected_menu_item += IsKeyPressed(KEY_DOWN) - IsKeyPressed(KEY_UP);
+    menu->selected_menu_item += (IsKeyPressed(KEY_DOWN) || IsKeyPressed(KEY_S)) - (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_W));
     menu->selected_menu_item = (menu->selected_menu_item >= menu_count) ? 0 : ((menu->selected_menu_item < 0) ? menu_count - 1 : menu->selected_menu_item);
 
-    if (IsKeyPressed(KEY_ENTER)) {
+    if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE)) {
         switch (menu->selected_menu_item) {
         case 0:
             game_switch_state(game, gameplay_state_create());

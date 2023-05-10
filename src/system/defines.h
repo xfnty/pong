@@ -16,5 +16,7 @@
 
 #define ID_INVALID (~(id_t)0)
 
+#define CONSTRAIN(v, a, b) ((v < a) ? a : ((v > b) ? b : v))
+
 
 #endif
