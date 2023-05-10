@@ -19,7 +19,7 @@ bool game_init(game_t* game) {
         .was_initialized = true,
         .is_running = true,
         .state = (game_state_t) { 0 },
-        .canvas = LoadRenderTexture(80, 50),
+        .canvas = LoadRenderTexture(160, 100),
     };
 
     while (!IsTextureReady(game->canvas.texture));

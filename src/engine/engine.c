@@ -53,6 +53,7 @@ bool _engine_init(engine_t* engine, int argc, const char** argv) {
 	SetTraceLogCallback(_raylib_log_callback);
 	InitWindow(800, 450, "Pong");
 	SetWindowState(FLAG_WINDOW_RESIZABLE);
+    SetExitKey(0);
 	SetTargetFPS(60);
 
     if (!game_init(&engine->game)) {

@@ -42,6 +42,7 @@ static void _intro_state_update(game_state_t* state, game_t* game, update_contex
         .height = size
     };
 
+    DrawText("Made with", 0, (game->canvas.texture.height) / 2 - 9, 8, WHITE);
     DrawRectangleLinesEx(rect, 2, WHITE);
     DrawText(TextSubtext("raylib", 0, 6 * fmin(1, progress / 0.15)), rect.x + 8, rect.y + 27, 8, WHITE);
 }
