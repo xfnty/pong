@@ -55,7 +55,6 @@ game_state_t intro_state_create() {
     return (game_state_t) {
         .name = strid_get_strid(SCOPE_NAME),
         .data = NULL,
-
         .on_enter = _intro_state_enter,
         .on_update = _intro_state_update,
         .on_exit = _intro_state_exit

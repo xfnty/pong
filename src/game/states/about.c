@@ -21,10 +21,10 @@ static void _about_state_update(game_state_t* state, game_t* game, update_contex
 
     DrawText("Pong", 2, 2, 8, WHITE);
 
-    DrawText("Controls:", 2, 20, 8, WHITE);
-    DrawText("  W-S - left pad", 2, 30, 8, WHITE);
-    DrawText("  UP-DOWN - right pad", 2, 40, 8, WHITE);
-    DrawText("  ESC - return to main menu", 2, 50, 8, WHITE);
+    DrawText("Controls:", 2, 20, 8, GRAY);
+    DrawText("  W-S - left pad", 2, 30, 8, GRAY);
+    DrawText("  UP-DOWN - right pad", 2, 40, 8, GRAY);
+    DrawText("  ESC - return to main menu", 2, 50, 8, GRAY);
 
     DrawText("> return", 2, 80, 8, WHITE);
 

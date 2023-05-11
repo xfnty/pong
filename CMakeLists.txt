@@ -10,9 +10,7 @@ option(BUILD_SHARED_LIBS "Build shared libs" OFF)
 
 # ===== Project ===== #
 project(pong LANGUAGES C)
-if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" AND ${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
-	add_compile_options(-g -rdynamic -fstack-protector-all -Wno-unused-result -DMALLOC_DEBUG)
-endif()
+add_compile_options(-O0 -g -rdynamic -fstack-protector-all -Wno-unused-result -DMALLOC_DEBUG)
 
 
 # ===== Third Party libraries ===== #

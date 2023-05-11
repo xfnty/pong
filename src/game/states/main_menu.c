@@ -36,9 +36,9 @@ static void _main_menu_state_update(game_state_t* state, game_t* game, update_co
     DrawText("Pong", 2, 2, 8, WHITE);
 
     const int menu_count = 3;
-    DrawText((menu->selected_menu_item == 0) ? "> play" : " play", 2, 50, 8, WHITE);
-    DrawText((menu->selected_menu_item == 1) ? "> about" : " about", 2, 60, 8, WHITE);
-    DrawText((menu->selected_menu_item == 2) ? "> exit" : " exit", 2, 70, 8, WHITE);
+    DrawText((menu->selected_menu_item == 0) ? "> play" : "  play", (menu->selected_menu_item == 0) + 1, 50, 8, (menu->selected_menu_item == 0) ? WHITE : GRAY);
+    DrawText((menu->selected_menu_item == 1) ? "> about" : "  about", (menu->selected_menu_item == 1) + 1, 60, 8, (menu->selected_menu_item == 1) ? WHITE : GRAY);
+    DrawText((menu->selected_menu_item == 2) ? "> exit" : "  exit", (menu->selected_menu_item == 2) + 1, 70, 8, (menu->selected_menu_item == 2) ? WHITE : GRAY);
 
     menu->selected_menu_item += (IsKeyPressed(KEY_DOWN) || IsKeyPressed(KEY_S)) - (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_W));
     menu->selected_menu_item = (menu->selected_menu_item >= menu_count) ? 0 : ((menu->selected_menu_item < 0) ? menu_count - 1 : menu->selected_menu_item);

@@ -54,7 +54,7 @@ static void _gameplay_state_update(game_state_t* state, game_t* game, update_con
     const float pad_speed = 1.75f;
     const float pad_height = 8;
     const float ball_speed = 75.0f;
-    const float greetings_duration = 1.5f;
+    const float greetings_duration = 3;
     const unsigned int victory_score = 3; 
 
     ClearBackground(BLACK);
@@ -105,7 +105,7 @@ static void _gameplay_state_update(game_state_t* state, game_t* game, update_con
         // Congratulate the winner
         DrawRectangle(0, 0, width, height, (Color) { 0, 0, 0, 200 });
         DrawText((gameplay->score[0] == victory_score) ? "1st player wins!" : "2nd player wins!", width / 2 - 40, height / 2 - 8, 8, WHITE);
-        if (gameplay->greetings_start_time + greetings_duration < GetTime()) {
+        if (gameplay->greetings_start_time + greetings_duration < GetTime() || IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_ENTER)) {
             gameplay->greetings_start_time = 0;
             gameplay_restart(state, game, true);
         }
@@ -121,20 +121,24 @@ static void _gameplay_state_update(game_state_t* state, game_t* game, update_con
         // Update ball
         if (gameplay->ball_pos.x < 0) {
             gameplay->score[1]++;
-            gameplay_restart(state, game, false);
             LOG("2nd player scored a goal!");
             if (gameplay->score[1] >= victory_score) {
                 gameplay->greetings_start_time = GetTime();
                 LOG("Greetings!");
             }
+            else {
+                gameplay_restart(state, game, false);
+            }
         }
         else if (gameplay->ball_pos.x > width) {
             gameplay->score[0]++;
-            gameplay_restart(state, game, false);
             LOG("1st player scored a goal!");
             if (gameplay->score[0] >= victory_score) {
                 gameplay->greetings_start_time = GetTime();
                 LOG("Greetings!");
+            }
+            else {
+                gameplay_restart(state, game, false);
             }
         }
         else if (CheckCollisionRecs(ball_rect, left_pad_bounds_rect) || CheckCollisionRecs(ball_rect, right_pad_bounds_rect)) {
