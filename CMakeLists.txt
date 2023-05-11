@@ -10,7 +10,7 @@ option(BUILD_SHARED_LIBS "Build shared libs" OFF)
 
 # ===== Project ===== #
 project(pong LANGUAGES C)
-add_compile_options(-O0 -g -rdynamic -fstack-protector-all -Wno-unused-result -DMALLOC_DEBUG)
+add_compile_options(-O0 -g -rdynamic -fstack-protector-all -DMALLOC_DEBUG)
 
 
 # ===== Third Party libraries ===== #

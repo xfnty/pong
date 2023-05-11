@@ -110,7 +110,7 @@ def copy_assets(build_type):
 def configure(build_type):
     return _run_command(
         'Configuring',
-        f'cmake -Wno-dev -DCMAKE_BUILD_TYPE={build_type.capitalize()}' +
+        f'cmake -DCMAKE_BUILD_TYPE={build_type.capitalize()}' +
         f' -B "{Settings.CMAKE_DIR}"' +
         f' -S "{Settings.PROJECT_DIR}"',
     )
