@@ -1,0 +1,65 @@
+name: Build & Publish release
+run-name: Build & Publish release
+
+on: [ push, workflow_dispatch ]
+
+jobs:
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.10"
+    - name: Install dependencies
+      run: |
+        sudo apt install -y build-essential git cmake libasound2-dev mesa-common-dev libx11-dev libxrandr-dev libxi-dev xorg-dev libgl1-mesa-dev libglu1-mesa-dev
+    - name: Build
+      run: |
+        python toolchain.py -cb
+    - name: Archive build
+      uses: thedoctor0/zip-release@0.7.1
+      with:
+        type: 'zip'
+        filename: 'linux-build.zip'
+        path: 'build/debug'
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.10"
+    - name: Build
+      run: |
+        python toolchain.py -cb
+    - name: Archive build
+      uses: thedoctor0/zip-release@0.7.1
+      with:
+        type: 'zip'
+        filename: 'windows-build.zip'
+        path: 'build/debug'
+
+  publish-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: 'linux-build.zip'
+      - uses: actions/download-artifact@v3
+        with:
+          name: 'windows-build.zip'
+      - name: Publish release
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          title: "Latest build"
+          automatic_release_tag: latest
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: false
+          files: |
+            linux-build.zip
+            windows-build.zip
