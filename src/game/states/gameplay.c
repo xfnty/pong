@@ -1,5 +1,6 @@
 #include <game/states/gameplay.h>
 
+#include <string.h>
 #include <assert.h>
 #include <math.h>
 
@@ -22,6 +23,8 @@ typedef struct gameplay_state_s {
     Vector2 ball_pos;
     Vector2 ball_dir;
     float ball_speed;
+    bool is_paused;
+    bool pad_is_ai[2];
 } gameplay_state_t;
 
 static void gameplay_restart(game_state_t* state, game_t* game, bool reset_score) {
@@ -34,7 +37,9 @@ static void gameplay_restart(game_state_t* state, game_t* game, bool reset_score
         .right_pad = 0,
         .ball_pos = (Vector2){ game->canvas.texture.width/2, game->canvas.texture.height/2 },
         .ball_dir = (Vector2){ GetRandomValue(0, 1) * 2 - 1, GetRandomValue(-10, 10) / 10.0 },
-        .ball_speed = 70.0f
+        .ball_speed = 70.0f,
+        .is_paused = false,
+        .pad_is_ai = { gameplay->pad_is_ai[0], gameplay->pad_is_ai[1] }
     };
 
     if (reset_score)
@@ -44,6 +49,7 @@ static void gameplay_restart(game_state_t* state, game_t* game, bool reset_score
 static void _gameplay_state_enter(game_state_t* state, game_t* game) {
     state->data = malloc(sizeof(gameplay_state_t));
     assert(state->data);
+    memset(state->data, 0, sizeof(gameplay_state_t));
 
     gameplay_restart(state, game, true);
 }
@@ -107,15 +113,32 @@ static void _gameplay_state_update(game_state_t* state, game_t* game, update_con
         // Congratulate the winner
         DrawRectangle(0, 0, width, height, (Color) { 0, 0, 0, 200 });
         DrawText((gameplay->score[0] == victory_score) ? "1st player wins!" : "2nd player wins!", width / 2 - 40, height / 2 - 8, 8, WHITE);
-        if (gameplay->greetings_start_time + greetings_duration < GetTime() || IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_ENTER)) {
+        if (gameplay->greetings_start_time + greetings_duration < GetTime() || GetKeyPressed() != 0) {
             gameplay->greetings_start_time = 0;
             gameplay_restart(state, game, true);
         }
     }
+    else if (gameplay->is_paused) {
+        DrawRectangle(0, 0, width, height, (Color) { 0, 0, 0, 200 });
+        DrawText("Paused", width / 2 - 20, height / 2 - 8, 8, WHITE);
+    }
     else {
         // Update pads
-        gameplay->left_pad += pad_speed * (IsKeyDown(KEY_S) - IsKeyDown(KEY_W)) * GetFrameTime();
-        gameplay->right_pad += pad_speed * (IsKeyDown(KEY_DOWN) - IsKeyDown(KEY_UP)) * GetFrameTime();
+        float ai_pad_y = (gameplay->ball_pos.y / height) * 2 - 1;
+
+        if (gameplay->pad_is_ai[0]) {
+            gameplay->left_pad = ai_pad_y;
+        }
+        else {
+            gameplay->left_pad += pad_speed * (IsKeyDown(KEY_S) - IsKeyDown(KEY_W)) * GetFrameTime();
+        }
+
+        if (gameplay->pad_is_ai[1]) {
+            gameplay->right_pad = ai_pad_y;
+        }
+        else {
+            gameplay->right_pad += pad_speed * (IsKeyDown(KEY_DOWN) - IsKeyDown(KEY_UP)) * GetFrameTime();
+        }
 
         gameplay->left_pad = CONSTRAIN(gameplay->left_pad, -1, 1);
         gameplay->right_pad = CONSTRAIN(gameplay->right_pad, -1, 1);
@@ -167,8 +190,21 @@ static void _gameplay_state_update(game_state_t* state, game_t* game, update_con
         gameplay_restart(state, game, true);
         LOG("match was restarted");
     }
+
     if (IsKeyPressed(KEY_ESCAPE)) {
         game_switch_state(game, main_menu_state_create());
+    }
+
+    if (gameplay->greetings_start_time == 0 && IsKeyPressed(KEY_SPACE)) {
+        gameplay->is_paused = !gameplay->is_paused;
+    }
+
+    if (IsKeyPressed(KEY_LEFT_BRACKET)) {
+        gameplay->pad_is_ai[0] = !gameplay->pad_is_ai[0];
+    }
+
+    if (IsKeyPressed(KEY_RIGHT_BRACKET)) {
+        gameplay->pad_is_ai[1] = !gameplay->pad_is_ai[1];
     }
 }
 

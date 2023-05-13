@@ -24,9 +24,12 @@ static void _about_state_update(game_state_t* state, game_t* game, update_contex
     DrawText("Controls:", 2, 20, 8, GRAY);
     DrawText("  W-S - left pad", 2, 30, 8, GRAY);
     DrawText("  UP-DOWN - right pad", 2, 40, 8, GRAY);
-    DrawText("  ESC - return to main menu", 2, 50, 8, GRAY);
+    DrawText("  [-] - enable AI", 2, 50, 8, GRAY);
+    DrawText("  P - restart", 2, 60, 8, GRAY);
+    DrawText("  SPACE - pause", 2, 70, 8, GRAY);
+    DrawText("  ESC - return to main menu", 2, 80, 8, GRAY);
 
-    DrawText("> return", 2, 80, 8, WHITE);
+    DrawText("> return", 2, 90, 8, WHITE);
 
     if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_ESCAPE)) {
         game_switch_state(game, main_menu_state_create());
