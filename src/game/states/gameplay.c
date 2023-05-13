@@ -21,6 +21,7 @@ typedef struct gameplay_state_s {
     float right_pad;
     Vector2 ball_pos;
     Vector2 ball_dir;
+    float ball_speed;
 } gameplay_state_t;
 
 static void gameplay_restart(game_state_t* state, game_t* game, bool reset_score) {
@@ -32,7 +33,8 @@ static void gameplay_restart(game_state_t* state, game_t* game, bool reset_score
         .left_pad = 0,
         .right_pad = 0,
         .ball_pos = (Vector2){ game->canvas.texture.width/2, game->canvas.texture.height/2 },
-        .ball_dir = (Vector2){ GetRandomValue(0, 1) * 2 - 1, GetRandomValue(-10, 10) / 10.0 }
+        .ball_dir = (Vector2){ GetRandomValue(0, 1) * 2 - 1, GetRandomValue(-10, 10) / 10.0 },
+        .ball_speed = 70.0f
     };
 
     if (reset_score)
@@ -53,9 +55,9 @@ static void _gameplay_state_update(game_state_t* state, game_t* game, update_con
     const float height = game->canvas.texture.height;
     const float pad_speed = 1.75f;
     const float pad_height = 8;
-    const float ball_speed = 75.0f;
+    const float ball_speed_inc = 7.5f;
     const float greetings_duration = 3;
-    const unsigned int victory_score = 3; 
+    const unsigned int victory_score = 3;
 
     ClearBackground(BLACK);
 
@@ -145,18 +147,20 @@ static void _gameplay_state_update(game_state_t* state, game_t* game, update_con
             gameplay->ball_pos.x = CONSTRAIN(gameplay->ball_pos.x, 5, width - ball_rect.width - 5);
             gameplay->ball_dir.x *= -1;
             gameplay->ball_dir.y = GetRandomValue(-10, 10) / 20.0f ;
+            gameplay->ball_speed += ball_speed_inc;
         }
         if (gameplay->ball_pos.y < 0 || gameplay->ball_pos.y > height) {
             gameplay->ball_pos.y = CONSTRAIN(gameplay->ball_pos.y, 1, height - 1);
             gameplay->ball_dir.y *= -1;
+            gameplay->ball_speed += ball_speed_inc;
         }
         float vmag = sqrtf(gameplay->ball_dir.x*gameplay->ball_dir.x + gameplay->ball_dir.y*gameplay->ball_dir.y);
         if (vmag > 0) {
             gameplay->ball_dir.x /= vmag;
             gameplay->ball_dir.y /= vmag;
         }
-        gameplay->ball_pos.x += gameplay->ball_dir.x * ball_speed * GetFrameTime();
-        gameplay->ball_pos.y += gameplay->ball_dir.y * ball_speed * GetFrameTime();
+        gameplay->ball_pos.x += gameplay->ball_dir.x * gameplay->ball_speed * GetFrameTime();
+        gameplay->ball_pos.y += gameplay->ball_dir.y * gameplay->ball_speed * GetFrameTime();
     }
 
     if (IsKeyPressed(KEY_R)) {
