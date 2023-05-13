@@ -35,18 +35,6 @@ class Settings:
         return os.path.exists(Settings.CMAKE_DIR)
 
     @static_property
-    def PROJECT_NAME():
-        if Settings.IS_CONFIGURED:
-            CMakeCache = open(
-                os.path.join(Settings.CMAKE_DIR, 'CMakeCache.txt')
-            ).read()
-            return re.search(
-                r'(?<=CMAKE_PROJECT_NAME:STATIC=)(.*)',
-                CMakeCache
-            )[0]
-        return None
-
-    @static_property
     def BUILDS_DIR():
         return os.path.join(Settings.PROJECT_DIR, 'build')
 
@@ -57,6 +45,10 @@ class Settings:
     @static_property
     def SANDBOX_DIR():
         return os.path.join(Settings.BUILDS_DIR, 'sandbox')
+
+    @staticmethod
+    def get_cmake_dir_for(build_type):
+        return os.path.join(Settings.CMAKE_DIR, build_type)
 
     @staticmethod
     def get_build_dir_for(build_type):
@@ -74,11 +66,27 @@ class Settings:
         )
 
     @staticmethod
+    def get_project_name_for(build_type):
+        if Settings.IS_CONFIGURED:
+            CMakeCache = open(
+                os.path.join(
+                    Settings.get_cmake_dir_for(build_type),
+                    'CMakeCache.txt'
+                )
+            ).read()
+            return re.search(
+                r'(?<=CMAKE_PROJECT_NAME:STATIC=)(.*)',
+                CMakeCache
+            )[0]
+        return None
+
+    @staticmethod
     def get_exe_path_for(build_type):
         return os.path.join(
             Settings.get_exe_dir_for(build_type),
-            Settings.PROJECT_NAME
+            Settings.get_project_name_for(build_type)
         )
+
 
 
 def _run_command(
@@ -111,7 +119,7 @@ def configure(build_type):
     return _run_command(
         'Configuring',
         f'cmake -DCMAKE_BUILD_TYPE={build_type.capitalize()}' +
-        f' -B "{Settings.CMAKE_DIR}"' +
+        f' -B "{Settings.get_cmake_dir_for(build_type)}"' +
         f' -S "{Settings.PROJECT_DIR}"',
     )
 
@@ -120,7 +128,7 @@ def build(build_type):
     copy_assets(build_type)
     return _run_command(
         'Building',
-        f'cmake --build {Settings.CMAKE_DIR} -j{mp.cpu_count()}',
+        f'cmake --build {Settings.get_cmake_dir_for(build_type)} -j{mp.cpu_count()}',
     )
 
 
@@ -162,7 +170,7 @@ def run_sandbox(args=[]):
 
 
 def clean(build_type):
-    shutil.rmtree(Settings.CMAKE_DIR, ignore_errors=True)
+    shutil.rmtree(Settings.get_cmake_dir_for(build_type), ignore_errors=True)
     shutil.rmtree(Settings.SANDBOX_DIR, ignore_errors=True)
     shutil.rmtree(Settings.BUILDS_DIR, ignore_errors=True)
 
