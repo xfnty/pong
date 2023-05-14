@@ -116,12 +116,21 @@ def copy_assets(build_type):
 
 
 def configure(build_type):
-    return _run_command(
+    if not _run_command(
         'Configuring',
         f'cmake -DCMAKE_BUILD_TYPE={build_type.capitalize()}' +
+        ' -DCMAKE_EXPORT_COMPILE_COMMANDS=1' +
         f' -B "{Settings.get_cmake_dir_for(build_type)}"' +
         f' -S "{Settings.PROJECT_DIR}"',
+    ):
+        return False
+
+    shutil.copy(
+        os.path.join(Settings.get_cmake_dir_for(build_type), 'compile_commands.json'),
+        os.path.join(Settings.PROJECT_DIR, 'compile_commands.json')
     )
+
+    return True
 
 
 def build(build_type):
