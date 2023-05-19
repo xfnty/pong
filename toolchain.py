@@ -1,274 +1,221 @@
 #!/usr/bin/env python3
 
 import os
-import re
 import sys
 import shutil
 import subprocess as sp
 import multiprocessing as mp
 import argparse
+import platform
+import enum
+from dataclasses import dataclass
+from typing import List
 
 
-class static_property:
-    def __init__(self, getter, *args, **kwargs):
-        self.args = args
-        self.kwargs = kwargs
-        self.getter = getter
-    def __get__(self, obj, objtype):
-        return self.getter(*self.args, **self.kwargs)
-    @staticmethod
-    def __call__(cls, *args, **kwargs):
-        return static_property(cls, *args, **kwargs)
+PROJECT_NAME    = 'pong'
+
+PROJECT_DIR     = os.path.realpath(os.path.dirname(__file__))
+CMAKE_DIR       = os.path.join(PROJECT_DIR, '.cmake')
+VENV_DIR        = os.path.join(PROJECT_DIR, '.venv')
+BUILD_DIR       = os.path.join(PROJECT_DIR, 'build')
+CMAKE           = shutil.which('cmake')
+GDB             = shutil.which('gdb')
 
 
-class Settings:
-    @static_property
-    def PROJECT_DIR():
-        return os.path.realpath(os.path.dirname(__file__))
+@dataclass
+class BuildTargetDescription:
+    folder: str
+    cmake_flags: List[str]
 
-    @static_property
-    def CMAKE_DIR():
-        return os.path.join(Settings.PROJECT_DIR, '.cmake')
-
-    @static_property
-    def IS_CONFIGURED():
-        return os.path.exists(Settings.CMAKE_DIR)
-
-    @static_property
-    def BUILDS_DIR():
-        return os.path.join(Settings.PROJECT_DIR, 'build')
-
-    @static_property
-    def ASSETS_DIR():
-        return os.path.join(Settings.PROJECT_DIR, 'assets')
-
-    @static_property
-    def SANDBOX_DIR():
-        return os.path.join(Settings.BUILDS_DIR, 'sandbox')
-
-    @staticmethod
-    def get_cmake_dir_for(build_type):
-        return os.path.join(Settings.CMAKE_DIR, build_type)
-
-    @staticmethod
-    def get_build_dir_for(build_type):
-        return os.path.join(Settings.BUILDS_DIR, build_type)
-
-    @staticmethod
-    def get_assets_dir_for(build_type):
-        return os.path.join(Settings.get_build_dir_for(build_type), 'assets')
-
-    @staticmethod
-    def get_exe_dir_for(build_type):
-        return os.path.join(
-            Settings.BUILDS_DIR,
-            build_type
-        )
-
-    @staticmethod
-    def get_project_name_for(build_type):
-        if Settings.IS_CONFIGURED:
-            CMakeCache = open(
-                os.path.join(
-                    Settings.get_cmake_dir_for(build_type),
-                    'CMakeCache.txt'
-                )
-            ).read()
-            return re.search(
-                r'(?<=CMAKE_PROJECT_NAME:STATIC=)(.*)',
-                CMakeCache
-            )[0]
-        return None
-
-    @staticmethod
-    def get_exe_path_for(build_type):
-        return os.path.join(
-            Settings.get_exe_dir_for(build_type),
-            Settings.get_project_name_for(build_type)
-        )
+class BuildTarget(enum.Enum):
+    Debug   = BuildTargetDescription('debug', ['-DCMAKE_BUILD_TYPE=Debug', '-DCMAKE_EXPORT_COMPILE_COMMANDS=1'])
+    Release = BuildTargetDescription('debug', ['-DCMAKE_BUILD_TYPE=Release'])
 
 
+def is_unix():
+    return platform.system() in ['Linux', 'Darwin']
 
-def _run_command(
-        title: str, 
-        cmd: str, 
-        cwd: str=Settings.PROJECT_DIR,
-        print_exit_code=False,
-        verbose=False) -> bool:
-    try:
-        print(f'----- {title} -----')
-        if verbose:
-            print(f'> {cmd}')
-        r = sp.check_call(cmd, cwd=cwd, shell=True)
-        if print_exit_code:
-            print(f'----- Exited with code {r} -----')
-    except Exception as e:
-        print(str(e))
+def is_venv_enabled():
+    return sys.prefix != sys.base_prefix
+
+def get_cmake_dir_for(target: BuildTarget):
+    return os.path.join(CMAKE_DIR, target.value.folder)
+
+def get_build_dir_for(target: BuildTarget):
+        return os.path.join(BUILD_DIR, target.value.folder)
+
+def get_exe_dir_for(target: BuildTarget):
+    return os.path.join(BUILD_DIR, target.value.folder)
+
+def get_exe_file_for(target: BuildTarget):
+    return os.path.join(get_exe_dir_for(target), PROJECT_NAME)
+
+
+def run_command(
+        cmd: list=[],
+        cwd: str=PROJECT_DIR,
+        status=True,
+        output=True,
+        exit_on_failure: bool=True):
+    if status:
+        print(f'> {" ".join(cmd)}', flush=True)
+
+    execution = sp.run(
+        cmd,
+        cwd=cwd,
+        stdout=None if output else sp.PIPE,
+        stderr=None if output else sp.PIPE,
+    )
+
+    if execution.returncode != 0:
+        if not output:
+            print(execution.stdout.decode())
+            print(execution.stderr.decode())
+        if exit_on_failure:
+            quit(execution.returncode)
         return False
 
     return True
 
 
-def copy_assets(build_type):
-    out_dir = Settings.get_assets_dir_for(build_type)
-    shutil.rmtree(out_dir, ignore_errors=True)
-    shutil.copytree(Settings.ASSETS_DIR, out_dir, dirs_exist_ok=True)
+def print_stage_title(s: str):
+    print(f'----- {s} -----')
 
 
-def configure(build_type):
-    if not _run_command(
-        'Configuring',
-        f'cmake -DCMAKE_BUILD_TYPE={build_type.capitalize()}' +
-        ' -DCMAKE_EXPORT_COMPILE_COMMANDS=1' +
-        f' -B "{Settings.get_cmake_dir_for(build_type)}"' +
-        f' -S "{Settings.PROJECT_DIR}"',
-    ):
-        return False
+def clean():
+    print_stage_title('Cleaning up')
+    run_command(['git', 'clean', '-Xdf'], status=False)
 
-    shutil.copy(
-        os.path.join(Settings.get_cmake_dir_for(build_type), 'compile_commands.json'),
-        os.path.join(Settings.PROJECT_DIR, 'compile_commands.json')
+
+def configure(target: BuildTarget):
+    if not CMAKE:
+        print('Could not find CMake executable.')
+        quit(-1)
+
+    print_stage_title('Configuring')
+    run_command(
+        [
+            CMAKE,
+            '-B', get_cmake_dir_for(target),
+            '-S', PROJECT_DIR,
+        ]
+        + target.value.cmake_flags,
+        status=False,
     )
 
-    return True
+    compile_commands_original_path = os.path.join(get_cmake_dir_for(target), 'compile_commands.json')
+    compile_commands_output_path = os.path.join(PROJECT_DIR, 'compile_commands.json')
+    if os.path.exists(compile_commands_original_path):
+        shutil.copy(compile_commands_original_path, compile_commands_output_path)
 
 
-def build(build_type):
-    copy_assets(build_type)
-    return _run_command(
-        'Building',
-        f'cmake --build {Settings.get_cmake_dir_for(build_type)} -j{mp.cpu_count()}',
-    )
+def build(target: BuildTarget):
+    if not CMAKE:
+        print('Could not find CMake executable.')
+        quit(-1)
 
-
-def run(build_type, args=[]):
-    exe_dir = Settings.get_exe_dir_for(build_type)
-    exe_path = Settings.get_exe_path_for(build_type)
-
-    return _run_command(
-        'Running',
-        f'{exe_path} ' + ' '.join(args),
-        cwd=exe_dir,
-        print_exit_code=True,
-    )
-
-
-def debug(build_type, args=[]):
-    gdb_path = shutil.which('gdb') or 'gdb'
-    exe_dir = Settings.get_exe_dir_for(build_type)
-    exe_path = Settings.get_exe_path_for(build_type)
-
-    return _run_command(
-        'Debugging',
-        f'{gdb_path} -q --return-child-result'
-        + f' {exe_path} ' + ('--args ' + ' '.join(args) if args else ''),
-        cwd=exe_dir
+    print_stage_title('Building')
+    run_command(
+        [
+            CMAKE,
+            '--build', get_cmake_dir_for(target),
+            f'-j{mp.cpu_count()}'
+        ],
+        status=False,
     )
 
 
-def run_sandbox(args=[]):
-    exe_dir = Settings.SANDBOX_DIR
-    exe_path = os.path.join(exe_dir, 'sandbox')
-
-    return _run_command(
-        'Running sandbox',
-        f'{exe_path} ' + ' '.join(args),
-        cwd=exe_dir,
-        print_exit_code=True,
+def run(target: BuildTarget, args: list=[]):
+    print_stage_title('Running')
+    run_command(
+        [get_exe_file_for(target)] + args,
+        cwd=get_exe_dir_for(target),
+        status=False,
     )
 
 
-def clean(build_type):
-    shutil.rmtree(Settings.get_cmake_dir_for(build_type), ignore_errors=True)
-    shutil.rmtree(Settings.SANDBOX_DIR, ignore_errors=True)
-    shutil.rmtree(Settings.BUILDS_DIR, ignore_errors=True)
+def debug(target: BuildTarget, args: list=[]):
+    if not GDB:
+        print('Could not find GDB executable.')
+        quit(-1)
+
+    print_stage_title('Debugging')
+
+    cmd = [GDB, '-q', '--return-child-result', get_exe_file_for(target)]
+    if args:
+        cmd.extend(['--args', ' '.join(args)])
+
+    run_command(cmd, cwd=get_exe_dir_for(target), status=False)
 
 
 def main():
     arg_parser = argparse.ArgumentParser(
-        description='Configure, build and run this project using CMake.' + 
+        description='Configure, build and run this project using CMake.' +
             ' This script is here to replace ".sh" and ".bat" scripts.'
     )
     arg_parser.add_argument(
-        '-c', '--config',
+        '-c', '--configure',
         dest='configure',
         action='store_true',
-        help='Configure only.'
+        help='Configure CMake.'
     )
     arg_parser.add_argument(
         '-b', '--build',
         dest='build',
         action='store_true',
-        help='Build only.'
+        help='Build the project.'
     )
+
     run_group = arg_parser.add_mutually_exclusive_group()
     run_group.add_argument(
         '-r', '--run',
         dest='run',
         action='store_true',
-        help='Run compiled executable.'
+        help='Run the compiled executable.'
     )
     run_group.add_argument(
         '-d', '--debug',
         dest='debug',
         action='store_true',
-        help='Run project with GDB.'
+        help='Run the project with GDB.'
     )
-    run_group.add_argument(
-        '-s', '--sandbox',
-        dest='sandbox',
-        action='store_true',
-        help='Run sandbox project.'
-    )
+
     arg_parser.add_argument(
         '--clean',
         dest='clean',
         action='store_true',
-        help='Clean up CMake and build folders from the beginning.'
+        help='Delete CMake and build directories.'
     )
     arg_parser.add_argument(
-        '--release',
-        dest='build_type',
-        action='store_const',
-        default='debug',
-        const='release',
-        help='Set build type to "release" (default is "debug").'
+        '--target',
+        dest='target',
+        default=BuildTarget.Debug.name,
+        choices=[t.name for t in list(BuildTarget)],
+        help='Specify build target. Available types are ' + ', '.join(f'"{t.name}"' for t in list(BuildTarget)) + '.'
     )
     arg_parser.add_argument(
         '-a', '--args',
         nargs=argparse.REMAINDER,
         default=[],
-        help='Specify command line arguments for the program to be run with.'
+        help='Specify command line arguments for the built project to be run with.'
     )
+
     args = arg_parser.parse_args()
-    build_type = args.build_type
+    target = BuildTarget[args.target]
 
     if args.clean:
-        clean(build_type)
+        clean()
 
     if args.configure:
-        configure(build_type)
+        configure(target)
 
     if args.build:
-        if not Settings.IS_CONFIGURED:
-            print(
-                'Project was not configured.' +
-                f' Run "{os.path.basename(__file__) } -c" to configure CMake.'
-            )
-            sys.exit(-1)
-
-        if not build(build_type):
-            sys.exit(-1)
+        build(target)
 
     if args.run:
-        if not run(build_type, args.args):
-            sys.exit(-1)
+        run(target)
     elif args.debug:
-        if not debug(build_type, args.args):
-            sys.exit(-1)
-    elif args.sandbox:
-        if not run_sandbox(args.args):
-            sys.exit(-1)
+        debug(target)
 
 
 if __name__ == '__main__':
