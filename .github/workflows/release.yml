@@ -42,13 +42,13 @@ jobs:
       with:
         python-version: "3.10"
 
-    - name: Install deps
-      run: sudo apt install -y build-essential cmake
-
-    - name: Configure
+    - name: Install dependencies
+      run: sudo apt install -y build-essential git cmake libasound2-dev mesa-common-dev libx11-dev libxrandr-dev libxi-dev xorg-dev libgl1-mesa-dev libglu1-mesa-dev
+    
+    - name: Configuring CMake
       run: python toolchain.py -c
 
-    - name: Build
+    - name: Building
       run: python toolchain.py -b
 
     - name: Zip linux artifact
