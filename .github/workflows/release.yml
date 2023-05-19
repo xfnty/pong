@@ -1,0 +1,87 @@
+name: Release manually
+run-name: Release manually
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+
+  upload-release:
+
+    runs-on: ubuntu-latest
+    needs: [build-linux, build-windows]
+
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Download artifacts
+      uses: actions/download-artifact@v1
+      with:
+        name: uploads
+
+    - name: Update release
+      uses: eine/tip@master
+      with:
+        tag: latest
+        rm: true
+        token: ${{ secrets.GITHUB_TOKEN }}
+        files: ./uploads/linux.zip ./uploads/windows.zip
+
+  build-linux:
+
+    runs-on: ubuntu-20.04 # for GLIBC 2.31
+
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.10"
+
+    - name: Install deps
+      run: sudo apt install -y build-essential cmake
+
+    - name: Configure
+      run: python toolchain.py -c
+
+    - name: Build
+      run: python toolchain.py -b
+
+    - name: Zip linux artifact
+      run: zip -r linux ./build/debug
+
+    - name: Upload linux artifact
+      uses: actions/upload-artifact@v1
+      with:
+        name: uploads
+        path: linux.zip
+
+  build-windows:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v1
+
+    - uses: actions/setup-python@v3
+      with:
+        python-version: "3.10"
+
+    - name: Configure
+      run: python toolchain.py -c
+
+    - name: Build
+      run: python toolchain.py -b
+
+    - name: Zip windows artifact
+      run: powershell Compress-Archive ./build/debug windows.zip
+
+    - name: Upload windows artifact
+      uses: actions/upload-artifact@v1
+      with:
+        name: uploads
+        path: windows.zip
